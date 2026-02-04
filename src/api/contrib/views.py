@@ -18,6 +18,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from voyage.models import Voyage
 from geo.common import GeoTreeFilter
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from common.supabase_auth import SupabaseAuthentication
 import json
 import logging
 import redis
@@ -128,8 +132,11 @@ class BatchDataResolver:
 
 @csrf_exempt
 @require_POST
+@api_view(['POST'])
+@authentication_classes([SupabaseAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def batch_data_api(request):
-    """API endpoint that handles batch data requests."""
+    """API endpoint that handles batch data requests. Requires authentication."""
     try:
         # Parse the request body
         batch_data = json.loads(request.body)
@@ -148,6 +155,7 @@ def batch_data_api(request):
 
 @csrf_exempt
 def location_tree(_):
+    """Get geographic location tree for contributions. Public endpoint."""
     return JsonResponse(GeoTreeFilter(select_all=True), safe=False)
 
 _schemaToDbTable: Dict[str, str] = {
@@ -653,11 +661,12 @@ def process_changeset_background(publication_key: str):
             error=f"Internal error: {traceback.format_exc()}"
         )
 
-@csrf_exempt
-@require_POST
+@api_view(['POST'])
+@authentication_classes([SupabaseAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def publish_batch(request):
     """
-    Initiate processing of a CombinedChangeSet.
+    Initiate processing of a CombinedChangeSet. Requires authentication.
     Expects JSON body with 'publication_key' and 'changeset'.
     """
     try:
@@ -716,9 +725,12 @@ def publish_batch(request):
         logger.error(f"Unexpected error in publish_batch: {e}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
 
+@api_view(['GET'])
+@authentication_classes([SupabaseAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def publication_status(request, publication_key):
     """
-    Check the status of a publication task.
+    Check the status of a publication task. Requires authentication.
     Returns current status and result if completed.
     """
     try:
