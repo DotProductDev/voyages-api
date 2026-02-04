@@ -60,6 +60,8 @@ pyzotero==1.5.9
 redis==5.0.1
 referencing==0.30.2
 requests==2.31.0
+PyJWT[crypto]>=2.8.0
+cryptography>=41.0.0
 rpds-py==0.10.4
 rsa==4.9.1
 s3transfer==0.13.0

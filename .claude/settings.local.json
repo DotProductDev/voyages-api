@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git filter-repo --version)",
+      "Bash(git add .gitignore)",
+      "Bash(git commit -m \"Add .gitignore for split API repository\")",
+      "Bash(git filter-repo --path src/geo-networks/ --path docker/geo-networks/Dockerfile --path-rename src/geo-networks/: --path-rename docker/geo-networks/Dockerfile:Dockerfile --force)",
+      "Bash(git add .gitignore README.md)",
+      "Bash(git commit -m \"Add .gitignore and README for split geo-networks repository\")",
+      "Bash(git clone ../voyages-api voyages-people-networks)",
+      "Bash(git filter-repo --path src/people-networks/ --path docker/people-networks/Dockerfile --path-rename src/people-networks/: --path-rename docker/people-networks/Dockerfile:Dockerfile --force)",
+      "Bash(git commit -m \"Add .gitignore and README for split people-networks repository\")",
+      "Bash(git clone ../voyages-api voyages-stats)",
+      "Bash(git filter-repo --path src/stats/ --path docker/stats/Dockerfile --path-rename src/stats/: --path-rename docker/stats/Dockerfile:Dockerfile --force)",
+      "Bash(git rev-list --count HEAD)",
+      "Bash(docker build -t voyages-api:split-test .)",
+      "Bash(docker build -t voyages-geo-networks:split-test .)",
+      "Bash(docker build -t voyages-people-networks:split-test .)",
+      "Bash(docker build -t voyages-stats:split-test .)",
+      "Bash(docker build -t voyages-stats:split-test . --no-cache=false)",
+      "Bash(git remote add origin https://github.com/SlaveVoyages/voyages-api.git)",
+      "Bash(git push --force --all origin)",
+      "Bash(git push --force --tags origin)",
+      "Bash(git checkout develop)",
+      "Bash(git checkout -b main)",
+      "Bash(git remote add origin https://github.com/SlaveVoyages/voyages-geo-networks.git)",
+      "Bash(git push --all origin)",
+      "Bash(git push --tags origin)",
+      "Bash(git remote add origin https://github.com/SlaveVoyages/voyages-people-networks.git)",
+      "Bash(git remote add origin https://github.com/SlaveVoyages/voyages-stats.git)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
