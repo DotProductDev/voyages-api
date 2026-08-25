@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Optional, Type, Union, Set
 from collections import defaultdict, deque
 from django.apps import apps
 from django.db import connection, transaction
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Q, Model
 from django.http import JsonResponse
 from django.views import View
@@ -236,6 +237,27 @@ class PublicationTask:
     processed: int = 0
 
 
+def column_attr(model_class: Type[Model], field_name: str) -> str:
+    """
+    The attribute on `model_class` that holds a column value.
+
+    A change names the column it writes, and for a foreign key that is what
+    Django calls `attname` -- `short_ref_id`. Where a change names the relation
+    instead, `voyage_groupings` for `voyage_groupings_id`, assigning a primary
+    key to it is refused: the relation wants an instance. Asking the model,
+    rather than reading the name, answers for both without depending on the
+    change to have described itself correctly.
+
+    A name the model does not know is returned untouched, to be refused where
+    it is used and not silently here.
+    """
+    try:
+        field = model_class._meta.get_field(field_name)
+    except FieldDoesNotExist:
+        return field_name
+    return getattr(field, "attname", field_name)
+
+
 class ChangeSetProcessor:
     """Processes CombinedChangeSet and applies changes to Django ORM."""
     
@@ -391,7 +413,7 @@ class ChangeSetProcessor:
         # Prepare field values
         field_values = {}
         for change in update['changes']:
-            field_name = change['property']
+            field_name = column_attr(model_class, change['property'])
             value = change['changed']
             
             # Replace temporary FK references with actual IDs
@@ -426,7 +448,7 @@ class ChangeSetProcessor:
             
             # Apply changes
             for change in update['changes']:
-                field_name = change['property']
+                field_name = column_attr(model_class, change['property'])
                 value = change['changed']
                 
                 # Replace temporary FK references with actual IDs
